@@ -7,7 +7,12 @@ const PORT = process.env.PORT || 5000
 dotenv.config()
 
 // MIDDLEWARES
-app.use('/', (req, res) => res.send('Hello'))
+app.use(express.json())
+
+// ROUTES
+app.get('/', (req, res) => {
+  res.send('hello')
+})
 
 // CREATE SERVER AND CONNECT TO THE DB
 mongoose
