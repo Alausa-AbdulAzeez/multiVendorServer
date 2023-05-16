@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 5000;
 dotenv.config();
 
 // MIDDLEWARES
-app.use("/", express.static("uploads"));
 app.use(express.json());
+app.use("/", express.static("uploads"));
 app.use(bodyParser.json());
 
 // ROUTES
