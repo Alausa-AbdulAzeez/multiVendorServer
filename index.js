@@ -12,12 +12,9 @@ dotenv.config();
 app.use(express.json());
 
 // ROUTES
-app.get("/", (req, res) => {
-  res.send("hello");
-});
-
 app.use("/api/user", userRoutes);
 // CREATE SERVER AND CONNECT TO THE DB
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
