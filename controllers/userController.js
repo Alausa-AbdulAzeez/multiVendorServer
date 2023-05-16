@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const path = require("path");
 
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
@@ -16,9 +17,10 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("Password can not be less that four(4) letters");
   }
 
-  const avatar = req.file?.filename;
-  res.send(avatar);
-  console.log(avatar);
+  const filename = req.file?.filename;
+  const fileUrl = path.join(filename);
+  // res.send(avatar);
+  console.log(fileUrl);
 });
 
 module.exports = {
