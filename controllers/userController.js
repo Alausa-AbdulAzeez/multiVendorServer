@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const path = require("path");
+const User = require("../models/userModel");
 
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
@@ -17,10 +18,33 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("Password can not be less that four(4) letters");
   }
 
-  const filename = req.file?.filename;
-  const fileUrl = path.join(filename);
-  // res.send(avatar);
-  console.log(fileUrl);
+  // CHECK IF USER ALREADY EXISTS
+  const userEmail = await User.findOne({ email: email });
+  if (userEmail) {
+    res.status(400);
+    throw new Error("User already exists");
+  }
+
+  // IF IT PASSES ALL THE ABOVE CONDITIONS, SAVE USER
+
+  const fileName = req.file?.filename;
+  const fileUrl = path.join(fileName);
+
+  const user = {
+    name,
+    email,
+    password,
+    avatar: fileUrl,
+  };
+
+  const newUser = await User.create(user);
+
+  if (newUser) {
+    res.status(200).json(newUser);
+  } else {
+    res.status(500);
+    throw new Error("Something went wrong!");
+  }
 });
 
 module.exports = {
