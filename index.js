@@ -4,6 +4,7 @@ const { default: mongoose } = require("mongoose");
 const errorHandler = require("./middlewares/errorHandler");
 const userRoutes = require("./routes/userRoutes");
 const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,6 +12,7 @@ dotenv.config();
 
 // MIDDLEWARES
 app.use(express.json());
+app.use(cors());
 app.use("/", express.static("uploads"));
 app.use(bodyParser.json());
 
