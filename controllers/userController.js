@@ -28,13 +28,13 @@ const registerUser = asyncHandler(async (req, res) => {
   // IF IT PASSES ALL THE ABOVE CONDITIONS, SAVE USER
 
   const fileName = req.file?.filename;
-  const fileUrl = path.join(fileName);
+  const fileUrl = fileName ? path?.join(fileName) : null;
 
   const user = {
     name,
     email,
     password,
-    avatar: fileUrl,
+    // avatar: fileUrl,
   };
 
   const newUser = await User.create(user);
