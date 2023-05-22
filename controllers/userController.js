@@ -40,7 +40,8 @@ const registerUser = asyncHandler(async (req, res) => {
   const newUser = await User.create(user);
 
   if (newUser) {
-    res.status(200).json(newUser);
+    const { password, ...others } = newUser?._doc;
+    res.status(200).json(others);
   } else {
     res.status(500);
     throw new Error("Something went wrong!");
