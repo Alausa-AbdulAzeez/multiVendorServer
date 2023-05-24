@@ -51,7 +51,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (newUser) {
     const { password, ...others } = newUser?._doc
-    res.status(200).json(...others, token)
+    console.log(token)
+    res.status(200).json({ ...others, token: 'token' })
   } else {
     res.status(500)
     throw new Error('Something went wrong!')
