@@ -1,7 +1,12 @@
 const asyncHandler = require('express-async-handler')
 const path = require('path')
 const User = require('../models/userModel')
+const jwt = require('jsonwebtoken')
 
+// GENERATE TOKEN
+const generateToken = (id) => {
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '5m' })
+}
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body
@@ -26,10 +31,12 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // IF IT PASSES ALL THE ABOVE CONDITIONS, SEND EMAIL CONFIRMATION LINK
+  // IF IT PASSES ALL THE ABOVE CONDITIONS, CREATE JWT
 
   const fileName = req.file?.filename
   const fileUrl = fileName ? path?.join(fileName) : null
 
+  //  CREATE NEW USER
   const user = {
     name,
     email,
@@ -37,11 +44,14 @@ const registerUser = asyncHandler(async (req, res) => {
     // avatar: fileUrl,
   }
 
+  // GENERATE TOKEN
+  const token = generateToken(user._id)
+
   const newUser = await User.create(user)
 
   if (newUser) {
     const { password, ...others } = newUser?._doc
-    res.status(200).json(others)
+    res.status(200).json(...others, token)
   } else {
     res.status(500)
     throw new Error('Something went wrong!')
