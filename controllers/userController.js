@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 
 // GENERATE TOKEN
 const generateToken = (id) => {
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '5m' })
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '5m' })
 }
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
@@ -44,15 +44,15 @@ const registerUser = asyncHandler(async (req, res) => {
     // avatar: fileUrl,
   }
 
-  // GENERATE TOKEN
-  const token = generateToken(user._id)
-
   const newUser = await User.create(user)
+
+  // GENERATE TOKEN
+  const token = generateToken(newUser._id)
 
   if (newUser) {
     const { password, ...others } = newUser?._doc
-    console.log(token)
-    res.status(200).json({ ...others, token: 'token' })
+
+    res.status(200).json({ ...others, token: token })
   } else {
     res.status(500)
     throw new Error('Something went wrong!')
