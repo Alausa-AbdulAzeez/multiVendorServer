@@ -11,17 +11,7 @@ const generateToken = (user) => {
 }
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
-  try {
-  } catch (error) {}
   const { name, email, password } = req.body
-
-  // OPTIONS FOR COOKIES
-  const options = {
-    expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    sameSite: 'none',
-    secure: true,
-  }
 
   // CHECK IF NAME, EMAIL, PASSWORD ARE PRESENT
   if (!name || !email || !password) {
@@ -60,39 +50,77 @@ const registerUser = asyncHandler(async (req, res) => {
   const token = generateToken(user)
 
   // ACTIVATION URL
-  const activationUrl = `http://localhost:3000/${token}`
+  const activationUrl = `http://localhost:3000/activate/${token}`
 
-  try {
-    await sendMail({
-      email: user.email,
-      subject: 'Activate your account',
-      message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
-    }).then(() =>
+  await sendMail({
+    email: user.email,
+    subject: 'Activate your account',
+    message: `Hello ${user.name}, please click on the link to activate your account: ${activationUrl}`,
+  })
+    .then(() =>
       res.status(200).json({
         message: `please check your email:- ${user.email} to activate your account!`,
       })
     )
-  } catch (error) {
-    console.log(error)
-  }
-
-  // const newUser = await User.create(user)
-  // if (newUser) {
-  //   const { password, ...others } = newUser?._doc
-
-  //   res.status(200).json({ ...others, token: token })
-  // } else {
-  //   res.status(500)
-  //   throw new Error('Something went wrong!')
-  // }
+    .catch((error) => {
+      res.status(500)
+      throw new Error(error)
+    })
 })
 
 // ACTIVATE USER
-const activateUser = async (req, res) => {
-  try {
-  } catch (error) {}
-}
+const activateUser = asyncHandler(async (req, res) => {
+  const { activation_token } = req.body
+
+  // OPTIONS FOR COOKIES
+  const options = {
+    expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    sameSite: 'none',
+    secure: true,
+  }
+
+  // CHECK IF THE ACTIVATION TOKEN IS PRESENT IN THE BODY
+  if (!activation_token) {
+    res.status(400)
+    throw new Error(
+      'Please send your token. Please send the token in this format {activation_token:token}'
+    )
+  }
+
+  // CHECK IF TOKEN IS VALID
+  const user = jwt.verify(activation_token, process.env.JWT_SECRET)
+
+  // THROW ERROR FOR AN INVALID TOKEN
+  if (!user) {
+    res.status(400)
+    throw new Error('Invalid Token')
+  }
+
+  // CHECK IF USER EXISTS ALREADY
+  const { email } = user?.user
+
+  const userExists = await User.findOne({ email })
+
+  if (userExists) {
+    res.status(400)
+    throw new Error('User already exists')
+  }
+
+  // CREATE USER
+  const newUser = await User.create(user?.user)
+  if (newUser) {
+    // SEND COOKIE
+    res.cookie('token', activation_token, options)
+    const { password, ...others } = newUser?._doc
+    res.status(200).json({ ...others })
+  } else {
+    res.status(500)
+    throw new Error('Something went wrong!')
+  }
+})
 
 module.exports = {
   registerUser,
+  activateUser,
 }

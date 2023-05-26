@@ -1,5 +1,5 @@
 const express = require('express')
-const { registerUser } = require('../controllers/userController')
+const { registerUser, activateUser } = require('../controllers/userController')
 const upload = require('../miscellaneous/multer')
 
 const router = express.Router()
@@ -8,6 +8,6 @@ const router = express.Router()
 router.post('/register', upload.single('file'), registerUser)
 
 // ACTIVATE USER
-router.post('/activate')
+router.post('/activate', activateUser)
 
 module.exports = router
