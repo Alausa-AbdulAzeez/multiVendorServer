@@ -1,33 +1,35 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const { default: mongoose } = require("mongoose");
-const errorHandler = require("./middlewares/errorHandler");
-const userRoutes = require("./routes/userRoutes");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+const express = require('express')
+const dotenv = require('dotenv')
+const { default: mongoose } = require('mongoose')
+const errorHandler = require('./middlewares/errorHandler')
+const userRoutes = require('./routes/userRoutes')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const cookieParser = require('cookie-parser')
 
-const app = express();
-const PORT = process.env.PORT || 5000;
-dotenv.config();
+const app = express()
+const PORT = process.env.PORT || 5000
+dotenv.config()
 
 // MIDDLEWARES
-app.use(express.json());
-app.use(cors());
-app.use("/", express.static("uploads"));
-app.use(bodyParser.json());
+app.use(express.json())
+app.use(cookieParser())
+app.use(cors())
+app.use('/', express.static('uploads'))
+app.use(bodyParser.json())
 
 // ROUTES
-app.use("/api/user", userRoutes);
+app.use('/api/user', userRoutes)
 
-app.use(errorHandler);
+app.use(errorHandler)
 // CREATE SERVER AND CONNECT TO THE DB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+      console.log(`Server running on port ${PORT}`)
+    })
   })
   .catch((error) => {
-    console.log(error);
-  });
+    console.log(error)
+  })
