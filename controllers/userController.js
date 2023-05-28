@@ -7,7 +7,7 @@ const sendMail = require("../miscellaneous/sendMail");
 
 // GENERATE TOKEN
 const generateToken = (user) => {
-  return jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "1m" });
 };
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
@@ -78,7 +78,7 @@ const activateUser = asyncHandler(async (req, res) => {
     expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
     httpOnly: false,
     sameSite: "none",
-    secure: false,
+    // secure: false,
   };
 
   // CHECK IF THE ACTIVATION TOKEN IS PRESENT IN THE BODY
@@ -104,23 +104,23 @@ const activateUser = asyncHandler(async (req, res) => {
   const userExists = await User.findOne({ email });
 
   if (userExists) {
-    res.status(400);
+    res.status(409);
     throw new Error("User already exists");
   }
   const token = activation_token;
-  res.status(200).cookie("token", token, options).json("Check cookie");
+  // res.status(200).cookie("token", token, options).json("Check cookie");
 
   // CREATE USER
-  // const newUser = await User.create(user?.user);
-  // if (newUser) {
-  //   // SEND COOKIE
-  //   res.cookie("token", activation_token, options);
-  //   const { password, ...others } = newUser?._doc;
-  //   res.status(200).json({ ...others });
-  // } else {
-  //   res.status(500);
-  //   throw new Error("Something went wrong!");
-  // }
+  const newUser = await User.create(user?.user);
+  if (newUser) {
+    // SEND COOKIE
+    res.cookie("token", token, options);
+    const { password, ...others } = newUser?._doc;
+    res.status(200).json({ ...others, token: token });
+  } else {
+    res.status(500);
+    throw new Error("Something went wrong!");
+  }
 });
 
 module.exports = {
