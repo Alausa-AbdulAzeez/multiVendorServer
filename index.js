@@ -17,7 +17,7 @@ app.use(
     credentials: true,
     origin: "http://localhost:3000",
     allowedHeaders: "*",
-    withCredentials: true,
+    // withCredentials: true,
   })
 );
 app.use(express.json());
