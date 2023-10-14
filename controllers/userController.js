@@ -4,10 +4,15 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const { Router } = require("express");
 const sendMail = require("../miscellaneous/sendMail");
+const bcrypt = require("bcrypt");
 
 // GENERATE TOKEN
 const generateToken = (user) => {
-  return jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "1m" });
+  return jwt.sign({ user }, process.env.JWT_SECRET, { expiresIn: "30d" });
+};
+
+const comparePassword = async (enteredPassword, dbPassword) => {
+  return await bcrypt.compare(enteredPassword, dbPassword);
 };
 // REGISTER USER
 const registerUser = asyncHandler(async (req, res) => {
@@ -123,7 +128,42 @@ const activateUser = asyncHandler(async (req, res) => {
   }
 });
 
+// LOGIN USER
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  // CHECK IF  EMAIL, PASSWORD ARE PRESENT
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Pleae fill in the required info");
+  }
+
+  // CHECK IF USER ALREADY EXISTS
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res.status(400);
+    throw new Error("User does not exist!");
+  } else {
+    const { name, email, password: userPassword } = user;
+    const isPasswordValid = await comparePassword(password, userPassword);
+
+    if (!isPasswordValid) {
+      res.status(403);
+      throw new Error("Username or password incorrect");
+    } else {
+      const userToken = { name, email, password: userPassword };
+      const token = generateToken(userToken);
+
+      const { password, ...others } = user?._doc;
+      const returnedUser = { token, ...others };
+
+      res.status(200).json(returnedUser);
+    }
+  }
+});
+
 module.exports = {
   registerUser,
   activateUser,
+  loginUser,
 };
